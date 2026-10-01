@@ -193,7 +193,7 @@ export const StudentPortal: React.FC<StudentPortalProps> = ({
                 <div>
                   <h4 className="text-xs font-bold">Ism va sinfni to'liq kiriting</h4>
                   <p className="text-[11px] text-amber-700 mt-0.5 leading-relaxed">
-                    Ism-familiyangizni yozing va sinfingizni (5-A dan 11-V gacha) tanlang. Shunda testlarni topshirish imkoniyati ochiladi.
+                    Ism-familiyangizni yozing, sinf (5-11) va sinf harfini (A1, A2, AT, T) tanlang. Shunda testlarni topshirish imkoniyati ochiladi.
                   </p>
                 </div>
               </div>

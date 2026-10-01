@@ -27,9 +27,10 @@ import {
   Lock,
 } from 'lucide-react';
 import { Test, Question, ExamSession, Submission, TestType, MatchingPair } from '../types';
-import { parseDocxFile } from '../utils/wordParser';
+import { parseDocxFile, parseFromHtmlAndText } from '../utils/wordParser';
 import { parsePdfFile } from '../utils/pdfParser';
 import { exportSubmissionsToExcel } from '../utils/excelExport';
+import { ToastContainer, ConfirmModal, ToastMessage, ToastType } from './Toast';
 import {
   saveTest,
   deleteTest,
@@ -84,6 +85,33 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [sortBy, setSortBy] = useState<'name' | 'grade' | 'score' | 'percentage' | 'warnings' | 'date'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [uploadMethod, setUploadMethod] = useState<'file' | 'text'>('file');
+
+  // Modern In-App Toast & Confirmation System (replaces window.alert & window.confirm)
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const showToast = (type: ToastType, title: string, message?: string) => {
+    const id = `toast_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    setToasts((prev) => [...prev, { id, type, title, message }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4500);
+  };
+  const dismissToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    confirmText?: string;
+    isDestructive?: boolean;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  });
 
   // Subscribe to live sessions & submissions
   useEffect(() => {

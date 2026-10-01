@@ -485,7 +485,7 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({
             <button
               onClick={toggleFullscreen}
               title="To'liq ekran"
-              className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200"
+              className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 cursor-pointer"
             >
               {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
             </button>
@@ -501,6 +501,30 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({
           </div>
         </div>
       </header>
+
+      {/* Fullscreen Alert Banner if not in fullscreen */}
+      {!isFullscreen && (
+        <div className="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-4 py-2.5 flex flex-wrap items-center justify-between text-xs font-medium shadow-xs">
+          <div className="flex items-center space-x-2">
+            <AlertTriangle className="w-4 h-4 text-amber-200 shrink-0" />
+            <span>Xalqaro imtihon standartiga binoan test to'liq ekran (Fullscreen) rejimida topshirilishi talab etiladi.</span>
+          </div>
+          <button
+            onClick={() => {
+              try {
+                if (document.documentElement.requestFullscreen) {
+                  document.documentElement.requestFullscreen().catch(() => {});
+                  setIsFullscreen(true);
+                }
+              } catch (e) {}
+            }}
+            className="mt-1 sm:mt-0 bg-white text-amber-900 font-bold px-3 py-1 rounded-lg hover:bg-amber-50 transition-all text-xs cursor-pointer shadow-xs flex items-center space-x-1"
+          >
+            <Maximize2 className="w-3.5 h-3.5" />
+            <span>To'liq Ekranga O'tish</span>
+          </button>
+        </div>
+      )}
 
       {/* Main Exam Content Area */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">

@@ -81,7 +81,7 @@ export function parseFromHtmlAndText(html: string, rawText: string): ParsedQuest
   const questionChunks: Array<{ lines: string[]; image?: string }> = [];
 
   let currentChunk: string[] = [];
-  const questionStartRegex = /^(\d+[\.\)]|\d+\-savol|savol\s*\d+|№\s*\d+)/i;
+  const questionStartRegex = /^(\d+[\.\)]|\d+\-topshiriq|\d+\-savol|topshiriq\s*\d+|savol\s*\d+|№\s*\d+|task\s*\d+|question\s*\d+)/i;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -120,18 +120,23 @@ export function parseFromHtmlAndText(html: string, rawText: string): ParsedQuest
     if (chunkLines.length === 0) return;
 
     // Header line: clean leading numbers/prefixes
-    let questionText = chunkLines[0].replace(/^(\d+[\.\)]|\d+\-savol:?|savol\s*\d+:?|№\s*\d+:?)\s*/i, '').trim();
+    let questionText = chunkLines[0].replace(/^(\d+[\.\)]|\d+\-topshiriq:?|\d+\-savol:?|topshiriq\s*\d+:?|savol\s*\d+:?|№\s*\d+:?)\s*/i, '').trim();
 
     const options: string[] = [];
     let correctAnswer = 'A';
     let isWritten = false;
-    let points = 2; // default 2 points per question
+    let points = 5; // default for school BSB questions
     let explanation = '';
 
+    // Check for inline bracketed points like [4 ball], (5 ball), 6 ball
+    const inlinePointsMatch = chunk.lines.join(' ').match(/\[(\d+)\s*ball\]|\((\d+)\s*ball\)|(\d+)\s*ballik/i);
+    if (inlinePointsMatch) {
+      points = parseInt(inlinePointsMatch[1] || inlinePointsMatch[2] || inlinePointsMatch[3], 10) || points;
+    }
+
     // Check if explicitly marked as written question
-    if (/yozma\s*savol|ochiq\s*savol|yechimini\s*yozing/i.test(chunkLines[0])) {
+    if (/yozma\s*savol|ochiq\s*savol|yechimini\s*yozing|tushuntiring|izohlang|aniqlang|chizma|jadval|rasmdan\s*foydalanib/i.test(chunkLines.join(' '))) {
       isWritten = true;
-      points = 5;
     }
 
     const optionRegex = /^([A-DА-Дa-dа-д])[\.\)]\s*(.*)$/;
@@ -173,33 +178,51 @@ export function parseFromHtmlAndText(html: string, rawText: string): ParsedQuest
 
       // If still before options, append to question text
       if (inQuestionBody) {
-        questionText += ` ${line}`;
+        questionText += `\n${line}`;
       } else {
         // Maybe explanation or note
-        explanation += ` ${line}`;
+        explanation += `\n${line}`;
       }
     }
 
-    // Determine type:
-    // 1. True / False if 2 options like To'g'ri / Noto'g'ri
-    let type: Question['type'] = 'multiple_choice';
-    if (options.length === 2 && options.some((o) => /to['’`]?g['’`]?ri|ha|true/i.test(o)) && options.some((o) => /noto['’`]?g['’`]?ri|yo['’`]?q|false/i.test(o))) {
+    // Determine question type:
+    let type: Question['type'] = 'written';
+
+    const fullQuestionStr = `${questionText} ${options.join(' ')}`;
+
+    if (/moslashtiring|muvofiqlashtiring|juftlik/i.test(fullQuestionStr)) {
+      type = 'matching';
+    } else if (
+      options.length === 2 &&
+      options.some((o) => /to['’`]?g['’`]?ri|ha|true/i.test(o)) &&
+      options.some((o) => /noto['’`]?g['’`]?ri|yo['’`]?q|false/i.test(o))
+    ) {
       type = 'true_false';
-    } else if (questionText.includes('_____') || questionText.includes('...') || /nuqtalar\s*o['’`]?rniga/i.test(questionText)) {
+    } else if (
+      /chiziqlar\s*o['’`]?rniga|bo['’`]?sh\s*joy|to['’`]?ldiring/i.test(fullQuestionStr) ||
+      fullQuestionStr.includes('_____') ||
+      fullQuestionStr.includes('……') ||
+      fullQuestionStr.includes('.....')
+    ) {
       type = 'fill_blank';
     } else if (options.length >= 2 && !isWritten) {
       type = 'multiple_choice';
+      if (points === 5) points = 2; // default 2 points for simple choice questions
     } else {
       type = 'written';
-      if (points === 2) points = 5;
     }
 
     parsedQuestions.push({
       questionNumber: index + 1,
-      text: questionText || `Savol ${index + 1}`,
+      text: questionText.trim() || `Savol ${index + 1}`,
       type,
       options: type === 'multiple_choice' ? options : undefined,
-      correctAnswer: type === 'multiple_choice' ? correctAnswer : 'Yozma baholash',
+      correctAnswer:
+        type === 'multiple_choice'
+          ? correctAnswer
+          : type === 'fill_blank'
+          ? 'Namunaviy kalit / to\'ldirish'
+          : 'Yozma baholash mezoni',
       points,
       imageUrl: chunk.image,
       explanation: explanation.trim() || undefined,
