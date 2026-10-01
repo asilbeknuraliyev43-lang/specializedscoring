@@ -1,0 +1,102 @@
+{
+  "entities": {
+    "Test": {
+      "title": "Test",
+      "description": "BSB or ChSB examination test definition",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "maxLength": 200 },
+        "subject": { "type": "string", "maxLength": 100 },
+        "grade": { "type": "number" },
+        "type": { "type": "string", "enum": ["BSB", "ChSB"] },
+        "description": { "type": "string", "maxLength": 2000 },
+        "durationMinutes": { "type": "number" },
+        "isActive": { "type": "boolean" },
+        "totalPoints": { "type": "number" },
+        "questionsCount": { "type": "number" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["title", "subject", "grade", "type", "durationMinutes", "isActive"]
+    },
+    "Question": {
+      "title": "Question",
+      "description": "Exam question with multiple choice or open written format",
+      "type": "object",
+      "properties": {
+        "testId": { "type": "string", "maxLength": 128 },
+        "questionNumber": { "type": "number" },
+        "text": { "type": "string", "maxLength": 5000 },
+        "imageUrl": { "type": "string" },
+        "type": { "type": "string", "enum": ["multiple_choice", "written"] },
+        "options": { "type": "array" },
+        "correctAnswer": { "type": "string", "maxLength": 1000 },
+        "points": { "type": "number" },
+        "explanation": { "type": "string", "maxLength": 1000 }
+      },
+      "required": ["testId", "questionNumber", "text", "type", "points"]
+    },
+    "ExamSession": {
+      "title": "ExamSession",
+      "description": "Active real-time proctored exam session of a student",
+      "type": "object",
+      "properties": {
+        "testId": { "type": "string", "maxLength": 128 },
+        "testTitle": { "type": "string", "maxLength": 200 },
+        "studentName": { "type": "string", "maxLength": 150 },
+        "grade": { "type": "number" },
+        "group": { "type": "string", "maxLength": 50 },
+        "status": { "type": "string", "enum": ["in_progress", "submitted", "disqualified"] },
+        "startTime": { "type": "string" },
+        "endTime": { "type": "string" },
+        "lastPing": { "type": "string" },
+        "currentQuestionIndex": { "type": "number" },
+        "totalQuestions": { "type": "number" },
+        "tabSwitchCount": { "type": "number" },
+        "warnings": { "type": "array" },
+        "isDisqualified": { "type": "boolean" },
+        "disqualifyReason": { "type": "string", "maxLength": 500 }
+      },
+      "required": ["testId", "testTitle", "studentName", "grade", "group", "status", "tabSwitchCount"]
+    },
+    "Submission": {
+      "title": "Submission",
+      "description": "Submitted exam outcome for student grading and analytics",
+      "type": "object",
+      "properties": {
+        "testId": { "type": "string", "maxLength": 128 },
+        "testTitle": { "type": "string", "maxLength": 200 },
+        "testType": { "type": "string", "enum": ["BSB", "ChSB"] },
+        "studentName": { "type": "string", "maxLength": 150 },
+        "grade": { "type": "number" },
+        "group": { "type": "string", "maxLength": 50 },
+        "score": { "type": "number" },
+        "maxScore": { "type": "number" },
+        "percentage": { "type": "number" },
+        "tabSwitchCount": { "type": "number" },
+        "submittedAt": { "type": "string" },
+        "durationSpentSeconds": { "type": "number" },
+        "status": { "type": "string", "enum": ["passed", "disqualified", "reviewed"] }
+      },
+      "required": ["testId", "testTitle", "studentName", "grade", "group", "score", "maxScore", "percentage", "submittedAt", "status"]
+    }
+  },
+  "firestore": {
+    "/tests/{testId}": {
+      "schema": "Test",
+      "description": "Collection of BSB and ChSB tests"
+    },
+    "/questions/{questionId}": {
+      "schema": "Question",
+      "description": "Collection of test questions"
+    },
+    "/exam_sessions/{sessionId}": {
+      "schema": "ExamSession",
+      "description": "Collection of active student exam sessions for real-time monitoring"
+    },
+    "/submissions/{submissionId}": {
+      "schema": "Submission",
+      "description": "Collection of exam submissions for analytics and Excel download"
+    }
+  }
+}

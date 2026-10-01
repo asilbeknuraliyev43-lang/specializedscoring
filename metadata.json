@@ -1,0 +1,8 @@
+{
+  "name": "Maktab BSB va ChSB Imtihon Tizimi",
+  "description": "Ixtisoslashtirilgan maktablar uchun oylik BSB va choraklik ChSB imtihonlarini topshirish, real vaqtda nazorat qilish va baholash platformasi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

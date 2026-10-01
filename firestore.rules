@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Connection check document
+    match /test/connection {
+      allow read: if true;
+    }
+
+    // Tests collection: accessible for students to view active tests
+    match /tests/{testId} {
+      allow read: if isValidId(testId);
+      allow create, update, delete: if isValidId(testId);
+    }
+
+    // Questions collection
+    match /questions/{questionId} {
+      allow read: if isValidId(questionId);
+      allow create, update, delete: if isValidId(questionId);
+    }
+
+    // Exam sessions: live monitoring of active students
+    match /exam_sessions/{sessionId} {
+      allow read: if isValidId(sessionId);
+      allow create: if isValidId(sessionId)
+        && request.resource.data.studentName is string
+        && request.resource.data.studentName.size() <= 150
+        && request.resource.data.testId is string;
+      allow update: if isValidId(sessionId)
+        && request.resource.data.studentName is string;
+      allow delete: if isValidId(sessionId);
+    }
+
+    // Submissions: exam outcomes for analytics and export
+    match /submissions/{submissionId} {
+      allow read: if isValidId(submissionId);
+      allow create: if isValidId(submissionId)
+        && request.resource.data.studentName is string
+        && request.resource.data.studentName.size() <= 150;
+      allow update, delete: if isValidId(submissionId);
+    }
+  }
+}
