@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Test, Question, StudentProfile, ExamSession, Submission } from '../types';
 import { useAntiCheat } from '../utils/antiCheat';
+import { ExamResultAnalysis } from './ExamResultAnalysis';
 import {
   createExamSession,
   updateExamSession,
@@ -328,67 +329,16 @@ export const ExamRoom: React.FC<ExamRoomProps> = ({
   const currentQ = questions[currentIndex] || questions[0];
   const answeredCount = Object.keys(answers).filter((k) => (answers[k] || '').trim().length > 0).length;
 
-  // If already submitted, show results view
+  // If already submitted, show comprehensive results analysis view
   if (isSubmitted && submissionResult) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <div className="max-w-xl w-full bg-white rounded-3xl border border-slate-200 p-8 shadow-xl text-center space-y-6">
-          <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
-            <CheckCircle2 className="w-10 h-10" />
-          </div>
-
-          <div>
-            <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-              Imtihon Muvaffaqiyatli Yakunlandi!
-            </h2>
-            <p className="text-xs text-slate-500 mt-1">
-              Sizning javoblaringiz qabul qilindi va tizim bazasiga yozildi.
-            </p>
-          </div>
-
-          <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 text-left space-y-3">
-            <div className="flex justify-between items-center text-xs text-slate-600">
-              <span>O'quvchi:</span>
-              <strong className="text-slate-900 font-bold">{student.fullName}</strong>
-            </div>
-            <div className="flex justify-between items-center text-xs text-slate-600">
-              <span>Sinf:</span>
-              <strong className="text-slate-900 font-bold">
-                {student.grade}-{student.group}
-              </strong>
-            </div>
-            <div className="flex justify-between items-center text-xs text-slate-600">
-              <span>Imtihon:</span>
-              <strong className="text-slate-900 font-bold">{test.title}</strong>
-            </div>
-            <div className="flex justify-between items-center text-xs text-slate-600">
-              <span>Qoidabuzarlik (Tab switch):</span>
-              <span className={`font-bold ${warningCount > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
-                {warningCount} ta
-              </span>
-            </div>
-            <div className="pt-3 border-t border-slate-200 flex justify-between items-center">
-              <span className="text-sm font-bold text-slate-700">To'plangan ball:</span>
-              <span className="text-xl font-black text-blue-600">
-                {submissionResult.score} / {submissionResult.maxScore} ball
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-xs font-medium text-slate-500">Muvaffaqiyat ko'rsatkichi:</span>
-              <span className="text-sm font-black text-emerald-600">
-                {submissionResult.percentage}%
-              </span>
-            </div>
-          </div>
-
-          <button
-            onClick={onExit}
-            className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-md shadow-blue-500/20 cursor-pointer transition-all"
-          >
-            Bosh Sahifaga Qaytish
-          </button>
-        </div>
-      </div>
+      <ExamResultAnalysis
+        submission={submissionResult}
+        test={test}
+        questions={questions}
+        student={student}
+        onExit={onExit}
+      />
     );
   }
 

@@ -25,12 +25,17 @@ import {
   Sparkles,
   HelpCircle,
   Lock,
+  LayoutDashboard,
+  ArrowLeft,
+  GraduationCap,
+  ChevronRight,
 } from 'lucide-react';
 import { Test, Question, ExamSession, Submission, TestType, MatchingPair } from '../types';
 import { parseDocxFile, parseFromHtmlAndText } from '../utils/wordParser';
 import { parsePdfFile } from '../utils/pdfParser';
 import { exportSubmissionsToExcel } from '../utils/excelExport';
 import { ToastContainer, ConfirmModal, ToastMessage, ToastType } from './Toast';
+import { AdminDashboard } from './AdminDashboard';
 import {
   saveTest,
   deleteTest,
@@ -53,8 +58,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   onClose,
 }) => {
   const [activeTab, setActiveTab] = useState<
-    'live' | 'docx' | 'questions' | 'tests' | 'analytics'
-  >('live');
+    'dashboard' | 'live' | 'docx' | 'questions' | 'tests' | 'analytics'
+  >('dashboard');
 
   // Real-time live sessions & submissions
   const [liveSessions, setLiveSessions] = useState<ExamSession[]>([]);
@@ -543,87 +548,238 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const disqualifiedCount = submissions.filter((s) => s.status === 'disqualified').length;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-      {/* Top Header & Navigation */}
-      <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <div className="flex items-center space-x-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-600"></span>
-            <h2 className="text-xl font-black text-slate-900 tracking-tight">
-              O'qituvchi va Admin Boshqaruv Markazi
-            </h2>
+    <div className="min-h-screen bg-slate-100/70 text-slate-900 flex flex-col md:flex-row font-sans">
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+
+      {/* LEFT SIDEBAR (Tugmalar chap tarafda) */}
+      <aside className="w-full md:w-64 lg:w-72 bg-white border-r border-slate-200/90 p-5 flex flex-col justify-between shrink-0 shadow-xs md:sticky md:top-0 md:h-screen z-20">
+        <div className="space-y-6">
+          {/* Logo & School Header */}
+          <div className="flex items-center space-x-3 pb-4 border-b border-slate-100">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-black shadow-md shadow-blue-500/20 shrink-0">
+              <BookOpen className="w-5 h-5" />
+            </div>
+            <div className="overflow-hidden">
+              <h2 className="text-sm font-black text-slate-900 tracking-tight leading-none truncate">
+                BSB & ChSB Admin
+              </h2>
+              <span className="text-[10px] text-blue-600 font-bold uppercase tracking-wider block mt-1">
+                Boshqaruv Markazi
+              </span>
+            </div>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            BSB va ChSB testlarini yuklash, real vaqtda o'quvchilarni nazorat qilish va Excel hisobotlarini olish
-          </p>
+
+          {/* Navigation Items (Chap tarafda joylashtirilgan) */}
+          <nav className="space-y-1.5">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3 py-1">
+              Boshqaruv Bo'limlari
+            </div>
+
+            {/* 1. Dashboard */}
+            <button
+              type="button"
+              onClick={() => setActiveTab('dashboard')}
+              className={`w-full px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
+                activeTab === 'dashboard'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+              }`}
+            >
+              <div className="flex items-center space-x-2.5">
+                <LayoutDashboard className="w-4 h-4" />
+                <span>Dashboard</span>
+              </div>
+              <span
+                className={`text-[10px] px-1.5 py-0.5 rounded-full font-extrabold ${
+                  activeTab === 'dashboard' ? 'bg-white/20 text-white' : 'bg-blue-50 text-blue-600'
+                }`}
+              >
+                Recharts
+              </span>
+            </button>
+
+            {/* 2. Jonli Nazorat */}
+            <button
+              type="button"
+              onClick={() => setActiveTab('live')}
+              className={`w-full px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
+                activeTab === 'live'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+              }`}
+            >
+              <div className="flex items-center space-x-2.5">
+                <Activity className="w-4 h-4" />
+                <span>Jonli Nazorat</span>
+              </div>
+              {liveSessions.filter((s) => s.status === 'in_progress').length > 0 ? (
+                <span className="flex items-center space-x-1 text-[10px] bg-emerald-500 text-white px-2 py-0.5 rounded-full animate-pulse font-extrabold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white"></span>
+                  <span>{liveSessions.filter((s) => s.status === 'in_progress').length}</span>
+                </span>
+              ) : (
+                <span className="text-[10px] text-slate-400">0</span>
+              )}
+            </button>
+
+            {/* 3. Word & PDF & AI Scanner */}
+            <button
+              type="button"
+              onClick={() => setActiveTab('docx')}
+              className={`w-full px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
+                activeTab === 'docx'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+              }`}
+            >
+              <div className="flex items-center space-x-2.5">
+                <Upload className="w-4 h-4" />
+                <span>Word & PDF Yuklash</span>
+              </div>
+              <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-md font-bold">
+                AI
+              </span>
+            </button>
+
+            {/* 4. Savollar Tahriri */}
+            <button
+              type="button"
+              onClick={() => setActiveTab('questions')}
+              className={`w-full px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
+                activeTab === 'questions'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+              }`}
+            >
+              <div className="flex items-center space-x-2.5">
+                <Edit className="w-4 h-4" />
+                <span>Savollar Tahriri</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-medium">Baza</span>
+            </button>
+
+            {/* 5. Testlar & Vaqt Boshqaruvi */}
+            <button
+              type="button"
+              onClick={() => setActiveTab('tests')}
+              className={`w-full px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
+                activeTab === 'tests'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+              }`}
+            >
+              <div className="flex items-center space-x-2.5">
+                <Settings className="w-4 h-4" />
+                <span>Testlar & Vaqt</span>
+              </div>
+              <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full font-bold">
+                {tests.length} ta
+              </span>
+            </button>
+
+            {/* 6. Analitika & Excel */}
+            <button
+              type="button"
+              onClick={() => setActiveTab('analytics')}
+              className={`w-full px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
+                activeTab === 'analytics'
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+              }`}
+            >
+              <div className="flex items-center space-x-2.5">
+                <FileSpreadsheet className="w-4 h-4" />
+                <span>Analitika & Excel</span>
+              </div>
+              <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">
+                {submissions.length}
+              </span>
+            </button>
+          </nav>
         </div>
 
-        {/* Tab Switcher */}
-        <div className="flex flex-wrap gap-1.5 bg-slate-100 p-1.5 rounded-2xl">
-          <button
-            onClick={() => setActiveTab('live')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 ${
-              activeTab === 'live'
-                ? 'bg-white text-blue-600 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Activity className="w-3.5 h-3.5" />
-            <span>Jonli Nazorat</span>
-            {liveSessions.filter((s) => s.status === 'in_progress').length > 0 && (
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-            )}
-          </button>
+        {/* Bottom Profile card & Exit */}
+        <div className="pt-4 border-t border-slate-100 space-y-3">
+          <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center space-x-3">
+            <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs shrink-0">
+              IMA
+            </div>
+            <div className="overflow-hidden">
+              <p className="text-xs font-bold text-slate-900 truncate">Administrator: IMA</p>
+              <span className="text-[10px] text-emerald-600 font-semibold flex items-center space-x-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Tizimda faol</span>
+              </span>
+            </div>
+          </div>
 
           <button
-            onClick={() => setActiveTab('docx')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 ${
-              activeTab === 'docx'
-                ? 'bg-white text-blue-600 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
+            type="button"
+            onClick={onClose}
+            className="w-full py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all flex items-center justify-center space-x-2 cursor-pointer"
           >
-            <Upload className="w-3.5 h-3.5" />
-            <span>Word & PDF Yuklash</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('questions')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 ${
-              activeTab === 'questions'
-                ? 'bg-white text-blue-600 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Edit className="w-3.5 h-3.5" />
-            <span>Savollar Tahriri</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('tests')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 ${
-              activeTab === 'tests'
-                ? 'bg-white text-blue-600 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Settings className="w-3.5 h-3.5" />
-            <span>Testlar & Vaqt</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('analytics')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5 ${
-              activeTab === 'analytics'
-                ? 'bg-white text-blue-600 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5" />
-            <span>Analitika & Excel</span>
+            <ArrowLeft className="w-4 h-4" />
+            <span>O'quvchi Portaliga Qaytish</span>
           </button>
         </div>
-      </div>
+      </aside>
+
+      {/* RIGHT MAIN CONTENT AREA */}
+      <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto space-y-6">
+        {/* Top Breadcrumb & Status Bar */}
+        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center space-x-2 text-xs">
+            <span className="font-bold text-slate-400">Admin</span>
+            <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
+            <span className="font-bold text-blue-600 capitalize">
+              {activeTab === 'dashboard'
+                ? 'Dashboard (Analitika & Recharts)'
+                : activeTab === 'live'
+                ? 'Jonli Nazorat'
+                : activeTab === 'docx'
+                ? 'Word & PDF (Gemini AI)'
+                : activeTab === 'questions'
+                ? 'Savollar Tahriri'
+                : activeTab === 'tests'
+                ? 'Testlar & Vaqt Boshqaruvi'
+                : 'Analitika & Excel Hisobot'}
+            </span>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() =>
+                setEditingTest({
+                  grade: 8,
+                  allowedGrades: [8],
+                  gradeDurations: { 8: 45 },
+                  type: 'BSB',
+                  durationMinutes: 45,
+                  totalPoints: 25,
+                  passingPercentage: 60,
+                  shuffleQuestions: true,
+                  showImmediateResults: true,
+                  allowBackNav: true,
+                  status: 'active',
+                })
+              }
+              className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow-xs cursor-pointer transition-all"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Yangi Test</span>
+            </button>
+          </div>
+        </div>
+
+        {/* TAB 0: DASHBOARD WITH RECHARTS */}
+        {activeTab === 'dashboard' && (
+          <AdminDashboard
+            submissions={submissions}
+            tests={tests}
+            liveSessions={liveSessions}
+            onNavigateTab={(tab) => setActiveTab(tab as any)}
+          />
+        )}
 
       {/* TAB 1: JONLI NAZORAT (REAL-TIME MONITORING) */}
       {activeTab === 'live' && (
@@ -2243,6 +2399,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           )}
         </div>
       )}
+      </main>
     </div>
   );
 };

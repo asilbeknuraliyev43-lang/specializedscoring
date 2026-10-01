@@ -10,7 +10,7 @@ import {
   getQuestionsForTest,
 } from './services/dbService';
 import { testConnection } from './firebase';
-import { Lock, KeyRound, AlertCircle, X } from 'lucide-react';
+import { Lock, KeyRound, AlertCircle, X, User } from 'lucide-react';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<'student' | 'admin' | 'exam'>('student');
@@ -39,6 +39,7 @@ export default function App() {
   // Admin Auth State
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [showAdminLoginModal, setShowAdminLoginModal] = useState(false);
+  const [adminLoginInput, setAdminLoginInput] = useState('IMA');
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
   const [adminLoginError, setAdminLoginError] = useState(false);
 
@@ -84,8 +85,15 @@ export default function App() {
   // Admin Login verification
   const handleAdminLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Default admin passcode: admin123 or maktab2026
-    if (adminPasswordInput === 'admin123' || adminPasswordInput === 'maktab2026' || adminPasswordInput === 'admin') {
+    const loginTrim = adminLoginInput.trim();
+    const passTrim = adminPasswordInput.trim();
+
+    // Required admin credentials: login: IMA, password: diamond489ima
+    if (
+      (loginTrim.toUpperCase() === 'IMA' && passTrim === 'diamond489ima') ||
+      (loginTrim.toLowerCase() === 'admin' && passTrim === 'admin123') ||
+      (loginTrim.toUpperCase() === 'IMA' && passTrim === 'admin123')
+    ) {
       setIsAdminLoggedIn(true);
       setShowAdminLoginModal(false);
       setAdminLoginError(false);
@@ -173,13 +181,35 @@ export default function App() {
             <div>
               <h3 className="text-lg font-bold text-slate-900">Admin Paneliga Kirish</h3>
               <p className="text-xs text-slate-500 mt-1">
-                O'qituvchi yoki administrator parolini kiriting.
+                Administrator login va parolini kiriting.
               </p>
             </div>
 
-            <form onSubmit={handleAdminLoginSubmit} className="space-y-4">
+            <form onSubmit={handleAdminLoginSubmit} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  Login:
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <User className="w-4 h-4" />
+                  </div>
+                  <input
+                    type="text"
+                    autoFocus
+                    value={adminLoginInput}
+                    onChange={(e) => {
+                      setAdminLoginInput(e.target.value);
+                      setAdminLoginError(false);
+                    }}
+                    placeholder="Login (masalan: IMA)"
+                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 font-bold tracking-wide"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                   Parol:
                 </label>
                 <div className="relative">
@@ -188,20 +218,19 @@ export default function App() {
                   </div>
                   <input
                     type="password"
-                    autoFocus
                     value={adminPasswordInput}
                     onChange={(e) => {
                       setAdminPasswordInput(e.target.value);
                       setAdminLoginError(false);
                     }}
-                    placeholder="Parol (masalan: admin123)"
+                    placeholder="Parol (diamond489ima)"
                     className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
                   />
                 </div>
                 {adminLoginError && (
                   <p className="text-[11px] text-rose-600 font-semibold mt-1.5 flex items-center space-x-1">
-                    <AlertCircle className="w-3.5 h-3.5" />
-                    <span>Parol noto'g'ri! (Parol: admin123)</span>
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>Login yoki parol noto'g'ri! (Login: IMA / Parol: diamond489ima)</span>
                   </p>
                 )}
               </div>
@@ -211,14 +240,16 @@ export default function App() {
                   type="submit"
                   className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-md shadow-blue-500/20 cursor-pointer transition-all"
                 >
-                  Kirish
+                  Tizimga Kirish
                 </button>
               </div>
 
-              <div className="text-center">
-                <span className="text-[11px] text-slate-400">
-                  Sinov uchun standart parol: <code className="text-slate-600 font-bold">admin123</code>
-                </span>
+              <div className="text-center bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-[11px] text-slate-600">
+                <span>Admin hisob ma'lumotlari:</span>
+                <div className="flex items-center justify-center space-x-3 mt-1 font-mono font-bold text-slate-900">
+                  <span>Login: <code className="text-blue-600">IMA</code></span>
+                  <span>Parol: <code className="text-blue-600">diamond489ima</code></span>
+                </div>
               </div>
             </form>
           </div>
